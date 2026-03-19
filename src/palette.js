@@ -6,10 +6,11 @@ export const P = {
   wallTeal: '#4d7a6b', wallTealDark: '#3d6258', wallTealLight: '#5d8a7b',
   wallBeige: '#c4b594', wallBeigeDark: '#a49a7a', wallCream: '#d4c5a0',
   // Floors
-  floorWood: '#8b7034', floorWoodLight: '#a08040', floorWoodDark: '#6b5420',
-  floorWoodPlank: '#7a6328',
-  floorCarpet: '#3d3560', floorCarpetLight: '#4d4570',
-  floorTile: '#8a8a94', floorTileLight: '#9a9aa0', floorTileDark: '#7a7a84',
+  floorWood: '#6A6460', floorWoodLight: '#7A7470', floorWoodDark: '#5A5450',
+  floorWoodPlank: '#5E5854',
+  floorCarpet: '#404045', floorCarpetLight: '#505055',
+  floorStone: '#606878', floorStoneLight: '#707880', floorStoneDark: '#505860',
+  floorTile: '#484848', floorTileLight: '#525252', floorTileDark: '#404040',
   // Furniture
   deskWood: '#6b4a2e', deskLight: '#8b6240', deskDark: '#4b3018',
   tableWood: '#7a5232', tableDark: '#5a3a1e',

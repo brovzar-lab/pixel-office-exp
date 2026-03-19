@@ -1,7 +1,7 @@
 import './style.css';
 import { GAME_W, GAME_H, SCALE, ROOMS, AGENTS } from './layout.js';
 import { drawScene, hitTest } from './scene.js';
-import { preloadSprites } from './spriteLoader.js';
+import { preloadSpriteSheets } from './spriteAnimator.js';
 
 // ─── Canvas ───
 const canvas = document.getElementById('game');
@@ -682,7 +682,7 @@ function render() {
 // ═══════════════════════════════════════════
 async function init() {
   await document.fonts.load("6px 'Press Start 2P'");
-  await preloadSprites();
+  await preloadSpriteSheets();
 
   buildAgentBar();
   buildChatTabs();

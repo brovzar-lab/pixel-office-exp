@@ -1,5 +1,5 @@
 import { P } from './palette.js';
-import { getSprite } from './spriteLoader.js';
+import { drawSpriteFrame, getSheet } from './spriteAnimator.js';
 
 // ─── Utility ───
 export function rect(ctx, x, y, w, h, color) {
@@ -375,84 +375,119 @@ export function drawTable(ctx, x, y, w, h) {
 
 // ─── Boardroom Table (large with depth + paper details) ───
 export function drawBoardTable(ctx, x, y, w, h) {
-  // Table shadow
-  ctx.globalAlpha = 0.25;
-  rect(ctx, x+6, y+h+4, w, 8, P.border);
+  const rad = 20; // corner radius
+  const marble = '#D0CCC8';
+  const marbleLight = '#E8E4E0';
+  const marbleDark = '#A8A4A0';
+  const vein = '#7A7670';
+
+  // Table shadow (smooth)
+  ctx.globalAlpha = 0.2;
+  ctx.beginPath();
+  ctx.roundRect(x + 4, y + h + 2, w, 10, rad);
+  ctx.fillStyle = '#000000';
+  ctx.fill();
   ctx.globalAlpha = 1;
-  // Rounded rectangle body
-  const r = 16;
-  rect(ctx, x+r, y, w-r*2, h, P.tableWood);
-  rect(ctx, x, y+r, w, h-r*2, P.tableWood);
-  // Surface highlight
-  rect(ctx, x+6, y+6, w-12, h-12, P.deskLight);
-  // Wood grain
-  for (let gy = y+12; gy < y+h-8; gy += 12) {
-    rect(ctx, x+10, gy, w-20, 2, P.tableWood);
+
+  // Front edge depth (drawn first, behind table top)
+  ctx.beginPath();
+  ctx.roundRect(x, y + 6, w, h + 4, rad);
+  ctx.fillStyle = marbleDark;
+  ctx.fill();
+
+  // Main marble surface (smooth rounded rect)
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, rad);
+  ctx.fillStyle = marble;
+  ctx.fill();
+
+  // Inner highlight (slightly inset, smooth)
+  ctx.beginPath();
+  ctx.roundRect(x + 4, y + 4, w - 8, h - 8, rad - 4);
+  ctx.fillStyle = marbleLight;
+  ctx.fill();
+
+  // Marble veins — smoother diagonal lines using canvas lines
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, rad);
+  ctx.clip();
+  // Primary veins
+  ctx.strokeStyle = vein;
+  ctx.lineWidth = 1.5;
+  ctx.globalAlpha = 0.5;
+  for (let v = 0; v < 4; v++) {
+    const vx = x + 30 + v * Math.floor((w - 60) / 4);
+    const vy = y + 6 + (v % 3) * 10;
+    ctx.beginPath();
+    ctx.moveTo(vx, vy);
+    ctx.lineTo(vx + 40 + (v % 2) * 20, vy + 28 + (v % 2) * 12);
+    ctx.stroke();
   }
-  // Front edge depth
-  rect(ctx, x+r, y+h, w-r*2, 8, P.tableDark);
-  rect(ctx, x+4, y+h-2, r, 8, P.tableDark);
-  rect(ctx, x+w-r-4, y+h-2, r, 8, P.tableDark);
-  // Papers
-  rect(ctx, x+24, y+16, 16, 12, P.textWhite);
-  rect(ctx, x+26, y+18, 12, 2, P.cabinetGray);
-  rect(ctx, x+w-44, y+20, 16, 12, P.textWhite);
-  rect(ctx, x+w/2-10, y+10, 20, 14, P.textWhite);
-  rect(ctx, x+w/2-8, y+12, 16, 2, P.cabinetGray);
-  rect(ctx, x+w/2-8, y+16, 12, 2, P.cabinetGray);
+  // Secondary thinner veins
+  ctx.strokeStyle = marbleDark;
+  ctx.lineWidth = 1;
+  ctx.globalAlpha = 0.35;
+  for (let v = 0; v < 3; v++) {
+    const vx = x + 50 + v * Math.floor((w - 100) / 3);
+    const vy = y + h - 20 - (v % 2) * 14;
+    ctx.beginPath();
+    ctx.moveTo(vx, vy);
+    ctx.lineTo(vx + 28, vy - 16);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+
+  // Subtle border ring
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, rad);
+  ctx.strokeStyle = marbleDark;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Papers (on top of table surface)
+  rect(ctx, x + 24, y + 16, 16, 12, P.textWhite);
+  rect(ctx, x + 26, y + 18, 12, 2, P.cabinetGray);
+  rect(ctx, x + w - 44, y + 20, 16, 12, P.textWhite);
+  rect(ctx, x + w / 2 - 10, y + 10, 20, 14, P.textWhite);
+  rect(ctx, x + w / 2 - 8, y + 12, 16, 2, P.cabinetGray);
+  rect(ctx, x + w / 2 - 8, y + 16, 12, 2, P.cabinetGray);
   // Coffee cups
-  rect(ctx, x+48, y+12, 6, 6, P.textWhite);
-  rect(ctx, x+48, y+10, 6, 2, P.cabinetGray);
-  rect(ctx, x+w-28, y+16, 6, 6, P.textWhite);
+  rect(ctx, x + 48, y + 12, 6, 6, P.textWhite);
+  rect(ctx, x + 48, y + 10, 6, 2, P.cabinetGray);
+  rect(ctx, x + w - 28, y + 16, 6, 6, P.textWhite);
 }
 
 // ─── Character (enhanced: uses AI sprite if available, else rect fallback) ───
 export function drawCharacter(ctx, x, y, config, frame, agentKey) {
-  // Try using AI-generated sprite
-  const sprite = agentKey ? getSprite(agentKey) : null;
-  if (sprite) {
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(sprite, x-8, y-8, 32, 32);
-    ctx.imageSmoothingEnabled = false;
-    // Idle animation — subtle breathing pulse
-    if (frame && frame % 80 < 40) {
-      ctx.globalAlpha = 0.06;
-      ctx.drawImage(sprite, x-8, y-9, 32, 32);
-      ctx.globalAlpha = 1;
-    }
-    return;
+  // Try sprite sheet first — characters are 48×96 in the sheet
+  if (agentKey && getSheet(agentKey)) {
+    const animFrame = frame ? Math.floor(frame / 15) : 0;
+    // Render: 32 wide × 64 tall, centered on the x,y point
+    const drawn = drawSpriteFrame(ctx, agentKey, 'idle_front', animFrame, x - 8, y - 40, 32, 64);
+    if (drawn) return;
   }
   // Rect fallback
   const { hair, shirt } = config;
   const hairC = P[hair] || P.hairBrown;
   const shirtC = P[shirt] || P.shirtBlue;
-  // Head shadow on body
   rect(ctx, x+2, y+10, 12, 2, P.skinDark);
-  // Head
   rect(ctx, x+2, y+2, 12, 10, P.skin);
   rect(ctx, x+4, y, 8, 2, P.skin);
-  // Skin shading
   rect(ctx, x+2, y+8, 2, 4, P.skinDark);
   rect(ctx, x+12, y+8, 2, 4, P.skinDark);
-  // Hair
   rect(ctx, x+2, y, 12, 4, hairC);
   rect(ctx, x+4, y-2, 8, 2, hairC);
-  // Side hair
   rect(ctx, x, y+2, 2, 6, hairC);
   rect(ctx, x+14, y+2, 2, 6, hairC);
-  // Eyes
   rect(ctx, x+4, y+6, 2, 2, P.hairBlack);
   rect(ctx, x+10, y+6, 2, 2, P.hairBlack);
-  // Eye whites
   rect(ctx, x+4, y+6, 1, 1, P.textWhite);
   rect(ctx, x+10, y+6, 1, 1, P.textWhite);
-  // Mouth
   rect(ctx, x+6, y+8, 4, 2, P.skinDark);
-  // Body / shirt
   rect(ctx, x, y+12, 16, 12, shirtC);
-  // Collar
   rect(ctx, x+4, y+12, 8, 2, P.textWhite);
-  // Shirt shading
   rect(ctx, x, y+12, 2, 12, P.border);
   ctx.globalAlpha = 0.2;
   rect(ctx, x, y+12, 2, 12, P.border);
@@ -461,13 +496,10 @@ export function drawCharacter(ctx, x, y, config, frame, agentKey) {
   ctx.globalAlpha = 0.15;
   rect(ctx, x+14, y+12, 2, 12, P.border);
   ctx.globalAlpha = 1;
-  // Arms
   rect(ctx, x-2, y+12, 2, 10, shirtC);
   rect(ctx, x+16, y+12, 2, 10, shirtC);
-  // Hands
   rect(ctx, x-2, y+20, 2, 4, P.skin);
   rect(ctx, x+16, y+20, 2, 4, P.skin);
-  // Idle animation - subtle head bob
   if (frame && frame % 80 < 40) {
     rect(ctx, x+4, y-4, 8, 2, hairC);
   }
@@ -475,24 +507,15 @@ export function drawCharacter(ctx, x, y, config, frame, agentKey) {
 
 // ─── Character sitting at desk ───
 export function drawSeatedChar(ctx, x, y, config, frame, agentKey) {
-  // Try using AI-generated sprite
-  const sprite = agentKey ? getSprite(agentKey) : null;
-  if (sprite) {
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(sprite, x-8, y-8, 32, 32);
-    ctx.imageSmoothingEnabled = false;
-    if (frame && frame % 80 < 40) {
-      ctx.globalAlpha = 0.06;
-      ctx.drawImage(sprite, x-8, y-9, 32, 32);
-      ctx.globalAlpha = 1;
-    }
-    return;
+  // Try sprite sheet — seated pose, 48×96 frame rendered to 32×64
+  if (agentKey && getSheet(agentKey)) {
+    const animFrame = frame ? Math.floor(frame / 20) : 0;
+    const drawn = drawSpriteFrame(ctx, agentKey, 'sit_front', animFrame, x - 8, y - 30, 32, 64);
+    if (drawn) return;
   }
   drawCharacter(ctx, x, y, config, frame);
-  // Pants visible below body
   rect(ctx, x+2, y+24, 6, 6, P.pants);
   rect(ctx, x+8, y+24, 6, 6, P.pants);
-  // Shoes
   rect(ctx, x, y+28, 6, 2, P.hairBlack);
   rect(ctx, x+10, y+28, 6, 2, P.hairBlack);
 }
@@ -569,13 +592,14 @@ export function drawRug(ctx, x, y, w, h) {
 
 // ─── Tile floor (checkered with grout lines) ───
 export function drawTileFloor(ctx, x, y, w, h) {
-  for (let ty = 0; ty < h; ty += 16) {
-    for (let tx = 0; tx < w; tx += 16) {
-      const light = (Math.floor(tx/16) + Math.floor(ty/16)) % 2 === 0;
-      rect(ctx, x+tx, y+ty, 16, 16, light ? P.floorTileLight : P.floorTileDark);
-      // Grout lines
-      rect(ctx, x+tx, y+ty, 16, 2, '#a0a0a8');
-      rect(ctx, x+tx, y+ty, 2, 16, '#a0a0a8');
+  // Polished concrete — smooth with subtle variation
+  rect(ctx, x, y, w, h, P.floorTile);
+  // Very subtle variation patches (no grout, no grid)
+  for (let ty = 0; ty < h; ty += 40) {
+    for (let tx = 0; tx < w; tx += 40) {
+      const seed = (tx * 7 + ty * 13) % 5;
+      if (seed === 0) rect(ctx, x+tx+4, y+ty+4, 32, 32, P.floorTileLight);
+      if (seed === 2) rect(ctx, x+tx+8, y+ty+8, 24, 24, P.floorTileDark);
     }
   }
 }

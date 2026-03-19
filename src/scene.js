@@ -161,9 +161,20 @@ function drawBoardroom(ctx, frame) {
   S.rect(ctx, r.x, r.y+wallH-6, r.w, 6, P.deskDark);
   S.rect(ctx, r.x, r.y+wallH-8, r.w, 2, P.deskWood);
 
-  // Floor (carpet with rug)
-  S.rect(ctx, r.x, r.y+wallH, r.w, r.h-wallH, P.floorCarpet);
-  S.drawRug(ctx, r.x+28, r.y+wallH+8, r.w-56, r.h-wallH-28);
+  // Floor (charcoal wood planks — vertical)
+  const fy = r.y + wallH;
+  const fh = r.h - wallH;
+  S.rect(ctx, r.x, fy, r.w, fh, '#2A2828');
+  // Vertical plank lines
+  for (let px = r.x + 20; px < r.x + r.w; px += 20) {
+    S.rect(ctx, px, fy, 2, fh, '#1E1C1C');
+    // Stagger horizontal joints
+    const offset = ((px - r.x) % 40 === 0) ? 40 : 100;
+    S.rect(ctx, px - 10, fy + offset, 10, 2, '#1E1C1C');
+    S.rect(ctx, px - 10, fy + offset + 120, 10, 2, '#1E1C1C');
+  }
+  // Edge shadow at baseboard
+  S.rect(ctx, r.x, fy, r.w, 4, '#1E1C1C');
 
   // Presentation screen + whiteboard on wall
   S.drawPresScreen(ctx, r.x+72, r.y+8, 88, 56);
@@ -173,27 +184,63 @@ function drawBoardroom(ctx, frame) {
   S.drawSconce(ctx, r.x+36, r.y+16, frame);
   S.drawSconce(ctx, r.x+r.w-44, r.y+16, frame);
 
-  // Large boardroom table
-  const tx = r.x + 100, ty = r.y + wallH + 40;
-  const tw = r.w - 200, th = r.h - wallH - 100;
+  // Large boardroom table (20% smaller)
+  const fullW = r.w - 200, fullH = r.h - wallH - 100;
+  const tw = Math.round(fullW * 0.8), th = Math.round(fullH * 0.8);
+  const tx = r.x + 100 + Math.round((fullW - tw) / 2);
+  const ty = r.y + wallH + 40 + Math.round((fullH - th) / 2);
   S.drawBoardTable(ctx, tx, ty, tw, th);
 
-  // Empty chairs around the table (no agents)
-  // Top side chairs
+  // Executive leather chairs around the table
+  const cBrown = '#5C3A1E';   // leather brown
+  const cDark  = '#3A2410';   // shadow/armrest
+  const cSeat  = '#6B4828';   // seat cushion
+  // Helper: draw executive chair facing direction
+  function execChair(cx, cy, facing) {
+    if (facing === 'down') {
+      // Backrest (top)
+      S.rect(ctx, cx-10, cy-4, 20, 6, cBrown);
+      S.rect(ctx, cx-8, cy-2, 16, 2, cDark);
+      // Seat cushion
+      S.rect(ctx, cx-10, cy+2, 20, 14, cSeat);
+      S.rect(ctx, cx-8, cy+4, 16, 10, cBrown);
+      // Armrests
+      S.rect(ctx, cx-12, cy, 4, 16, cDark);
+      S.rect(ctx, cx+8, cy, 4, 16, cDark);
+    } else if (facing === 'up') {
+      // Seat cushion
+      S.rect(ctx, cx-10, cy, 20, 14, cSeat);
+      S.rect(ctx, cx-8, cy+2, 16, 10, cBrown);
+      // Backrest (bottom)
+      S.rect(ctx, cx-10, cy+14, 20, 6, cBrown);
+      S.rect(ctx, cx-8, cy+16, 16, 2, cDark);
+      // Armrests
+      S.rect(ctx, cx-12, cy, 4, 18, cDark);
+      S.rect(ctx, cx+8, cy, 4, 18, cDark);
+    } else if (facing === 'left') {
+      // Seat
+      S.rect(ctx, cx, cy-8, 14, 18, cSeat);
+      S.rect(ctx, cx+2, cy-6, 10, 14, cBrown);
+      // Backrest (right side)
+      S.rect(ctx, cx+14, cy-10, 6, 22, cBrown);
+      S.rect(ctx, cx+16, cy-8, 2, 18, cDark);
+      // Armrests
+      S.rect(ctx, cx, cy-10, 14, 4, cDark);
+      S.rect(ctx, cx, cy+8, 14, 4, cDark);
+    }
+  }
+  // Top side chairs (facing down toward table)
   for (let i = 0; i < 3; i++) {
     const ax = tx + 28 + i * Math.floor(tw/3);
-    S.rect(ctx, ax-2, ty-8, 16, 8, P.chairBrown);
-    S.rect(ctx, ax, ty-6, 12, 4, P.chairDark);
+    execChair(ax, ty - 18, 'down');
   }
-  // Bottom side chairs
+  // Bottom side chairs (facing up toward table)
   for (let i = 0; i < 3; i++) {
     const ax = tx + 28 + i * Math.floor(tw/3);
-    S.rect(ctx, ax-2, ty+th+2, 16, 8, P.chairBrown);
-    S.rect(ctx, ax, ty+th+4, 12, 4, P.chairDark);
+    execChair(ax, ty + th + 4, 'up');
   }
-  // Right side chair
-  S.rect(ctx, tx+tw+4, ty+th/2-6, 8, 16, P.chairBrown);
-  S.rect(ctx, tx+tw+6, ty+th/2-4, 4, 12, P.chairDark);
+  // Right side chair (facing left toward table)
+  execChair(tx + tw + 8, ty + th/2 - 2, 'left');
 
   // Water cooler
   S.drawWaterCooler(ctx, r.x+r.w-28, r.y+r.h-56);
@@ -226,65 +273,6 @@ function drawHallways(ctx) {
   S.drawPlant(ctx, hr.x+12, hr.y+8, 1);
 }
 
-// ─── Break room ───
-function drawBreakRoom(ctx, frame) {
-  const r = ROOMS.breakRm;
-  const wallH = Math.round(r.h * 0.32);
-
-  S.rect(ctx, r.x, r.y, r.w, 6, P.border);
-  S.rect(ctx, r.x, r.y+6, r.w, wallH-6, P.wallBeige);
-  S.rect(ctx, r.x, r.y+wallH-6, r.w, 6, P.deskDark);
-  S.drawTileFloor(ctx, r.x, r.y+wallH, r.w, r.h-wallH);
-
-  // Wall decorations
-  S.drawClock(ctx, r.x+20, r.y+16, frame);
-  S.drawWallArt(ctx, r.x+48, r.y+16, 28, 20);
-
-  // Table + chairs
-  S.drawTable(ctx, r.x+28, r.y+wallH+24, 68, 36);
-  S.drawChair(ctx, r.x+36, r.y+wallH+68, P.chairBrown);
-  S.drawChair(ctx, r.x+68, r.y+wallH+68, P.chairBrown);
-
-  // Couch
-  S.drawCouch(ctx, r.x+r.w-76, r.y+wallH+56);
-
-  S.drawLabelBg(ctx, 'BREAK ROOM', r.x+r.w/2, r.y+r.h-16, 8, P.textCream);
-}
-
-// ─── WC rooms ───
-function drawWC(ctx, key) {
-  const r = ROOMS[key];
-  const wallH = Math.round(r.h * 0.32);
-
-  S.rect(ctx, r.x, r.y, r.w, 6, P.border);
-  S.rect(ctx, r.x, r.y+6, r.w, wallH-6, P.wallCream);
-  S.rect(ctx, r.x, r.y+wallH-6, r.w, 6, P.deskDark);
-  // Distinct bathroom floor (light blue/white ceramic)
-  for (let ty = 0; ty < r.h - wallH; ty += 12) {
-    for (let tx = 0; tx < r.w; tx += 12) {
-      const light = (Math.floor(tx/12) + Math.floor(ty/12)) % 2 === 0;
-      S.rect(ctx, r.x+tx, r.y+wallH+ty, 12, 12, light ? '#c8dce8' : '#a8bcc8');
-      S.rect(ctx, r.x+tx, r.y+wallH+ty, 12, 2, '#b0c4d0');
-      S.rect(ctx, r.x+tx, r.y+wallH+ty, 2, 12, '#b0c4d0');
-    }
-  }
-
-  // Stall partitions
-  S.rect(ctx, r.x+8, r.y+wallH+8, r.w-16, 36, P.whiteboard);
-  S.rect(ctx, r.x+8, r.y+wallH+8, r.w-16, 4, P.cabinetGray);
-  S.rect(ctx, r.x+r.w/2, r.y+wallH+8, 2, 36, P.cabinetGray);
-  // Sink
-  S.rect(ctx, r.x+r.w/2-12, r.y+wallH+56, 24, 12, P.floorTileLight);
-  S.rect(ctx, r.x+r.w/2-8, r.y+wallH+58, 16, 8, '#a0c0d0');
-  // Mirror
-  S.rect(ctx, r.x+r.w/2-10, r.y+16, 20, 28, P.cabinetGray);
-  S.rect(ctx, r.x+r.w/2-8, r.y+18, 16, 24, '#c0d8e8');
-
-  S.drawLabelBg(ctx, 'WC', r.x+r.w/2, r.y+r.h-16, 10, P.textCream);
-
-  // Brown walls with door opening
-  S.drawRoomWalls(ctx, ROOMS[key]);
-}
 
 // ─── Main scene draw ───
 export function drawScene(ctx, w, h, frame) {
@@ -303,9 +291,6 @@ export function drawScene(ctx, w, h, frame) {
     drawOffice(ctx, key, frame);
   });
 
-  drawBreakRoom(ctx, frame);
-  drawWC(ctx, 'wc1');
-  drawWC(ctx, 'wc2');
 }
 
 // ─── Hit detection ───
