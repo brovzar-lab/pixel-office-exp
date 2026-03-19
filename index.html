@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pixel Corp Office</title>
+  <meta name="description" content="Pixel Corp Office — 2.5D isometric pixel art office simulator with 7 agents" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- LEFT: Dashboard Panel -->
+    <aside id="dashboard" class="panel panel-left">
+      <header class="panel-header">
+        <h1 class="panel-title">PIXEL CORP</h1>
+        <p class="panel-subtitle">Office Dashboard</p>
+      </header>
+
+      <!-- ACTIVE DEALS (replaces old agent list) -->
+      <section class="panel-section deals-section">
+        <div class="deals-header">
+          <h2 class="section-title deals-title">💼 ACTIVE DEALS</h2>
+          <span class="deals-count" id="deals-count">0 open</span>
+        </div>
+        <div id="deals-list" class="deals-list"></div>
+      </section>
+
+      <section class="panel-section">
+        <h2 class="section-title">ACTIVITY LOG</h2>
+        <ul id="activity-log" class="activity-log"></ul>
+      </section>
+
+      <section class="panel-section">
+        <h2 class="section-title">OFFICE STATS</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-value" id="stat-working">0</span>
+            <span class="stat-label">Working</span>
+            <div class="stat-bar working"></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value" id="stat-idle">0</span>
+            <span class="stat-label">Idle</span>
+            <div class="stat-bar idle"></div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value" id="stat-meeting">0</span>
+            <span class="stat-label">Meeting</span>
+            <div class="stat-bar meeting"></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="panel-footer">
+        <span id="dash-time" class="dash-time"></span>
+      </div>
+    </aside>
+
+    <!-- CENTER: Agent Bar + Canvas -->
+    <div id="center-col">
+      <!-- Horizontal Agent Bar -->
+      <div id="agent-bar" class="agent-bar"></div>
+      <!-- Canvas -->
+      <div id="canvas-wrap">
+        <canvas id="game"></canvas>
+      </div>
+    </div>
+
+    <!-- RIGHT: Chat + Teamwork Panel -->
+    <aside id="right-panel" class="panel panel-right">
+      <div class="right-top">
+        <header class="panel-header">
+          <h1 class="panel-title chat-title">TEAM CHAT</h1>
+          <p class="panel-subtitle">Talk to your agents</p>
+        </header>
+        <div id="chat-tabs" class="chat-tabs"></div>
+        <div id="chat-messages" class="chat-messages"></div>
+        <form id="chat-form" class="chat-input-area">
+          <input type="text" id="chat-input" class="chat-input" placeholder="Type a message..." autocomplete="off" />
+          <button type="submit" id="chat-send" class="chat-send">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+          </button>
+        </form>
+      </div>
+      <div class="right-bottom">
+        <header class="teamwork-header">
+          <h2 class="section-title teamwork-title">🤝 TEAMWORK</h2>
+          <span class="teamwork-count" id="collab-count">0 active</span>
+        </header>
+        <div id="teamwork-list" class="teamwork-list"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Agent detail modal -->
+  <div id="info-panel" class="info-panel hidden">
+    <button id="info-close" class="info-close">&times;</button>
+    <div id="info-content"></div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
