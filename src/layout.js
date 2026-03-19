@@ -1,17 +1,17 @@
-// Room layout definitions - all coordinates in game pixels (640x440 native)
-export const GAME_W = 640;
-export const GAME_H = 456;
-export const SCALE = 2;
-export const GAP = 4; // dark border thickness
+// Room layout definitions - all coordinates in game pixels (1280x912 native, Tier 2 double resolution)
+export const GAME_W = 1280;
+export const GAME_H = 912;
+export const SCALE = 1;
+export const GAP = 8; // border thickness (was 4)
 
-// Column widths
-const LW = 150, HW = 26, CW = 264, RW = 150;
-// Row heights
-const TH = 110, HH = 26, MH = 144, BH = 110;
+// Column widths (all ×2 from v1)
+const LW = 300, HW = 52, CW = 528, RW = 300;
+// Row heights (all ×2 from v1)
+const TH = 220, HH = 52, MH = 288, BH = 220;
 // Column X positions
 const C1 = GAP, HL = C1+LW+GAP, C2 = HL+HW+GAP, HR = C2+CW+GAP, C3 = HR+HW+GAP;
 // Row Y positions
-const TITLE_H = 16; // space for PIXEL CORP OFFICE banner
+const TITLE_H = 32; // space for banner (was 16)
 const R1 = GAP+TITLE_H, HT = R1+TH+GAP, R2 = HT+HH+GAP, HB = R2+MH+GAP, R3 = HB+HH+GAP;
 
 export const ROOMS = {
@@ -26,9 +26,9 @@ export const ROOMS = {
   board:    { x:C2, y:R2, w:CW, h:MH, type:'boardroom',  door:{ side:'left',   pos:0.4 } },
   sandra:   { x:C3, y:R2, w:RW, h:MH, type:'office',     door:{ side:'left',   pos:0.4 } },
   charlie:  { x:C1, y:R3, w:LW, h:BH, type:'office',     door:{ side:'right',  pos:0.6 } },
-  breakRm:  { x:C2, y:R3, w:120, h:BH, type:'breakroom',  door:{ side:'top',    pos:0.3 } },
-  wc1:      { x:C2+120+GAP, y:R3, w:66, h:BH, type:'wc',  door:{ side:'left',   pos:0.5 } },
-  wc2:      { x:C2+120+GAP+66+GAP, y:R3, w:64, h:BH, type:'wc', door:{ side:'right', pos:0.5 } },
+  breakRm:  { x:C2, y:R3, w:240, h:BH, type:'breakroom',  door:{ side:'top',    pos:0.3 } },
+  wc1:      { x:C2+240+GAP, y:R3, w:132, h:BH, type:'wc',  door:{ side:'left',   pos:0.5 } },
+  wc2:      { x:C2+240+GAP+132+GAP, y:R3, w:128, h:BH, type:'wc', door:{ side:'right', pos:0.5 } },
   wendy:    { x:C3, y:R3, w:RW, h:BH, type:'office',     door:{ side:'left',   pos:0.7 } },
 };
 
